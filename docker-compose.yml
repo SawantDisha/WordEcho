@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./blog-app-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80" # Map port 80 in the container to 3000 on the host
+    restart: always
+
+  backend:
+    build:
+      context: ./blog-app-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+      DB_NAME: blog_app
+
+  db:
+    image: mysql:8
+    container_name: blog-app-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: blog_app
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql:ro
+
+volumes:
+  db_data:
